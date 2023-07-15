@@ -6,6 +6,10 @@ description = "Smart wallet engine CLI"
 keywords = ["smart", "wallet", "engine", "smartcontracts", "defi"]
 repository = "https://github.com/torcoste/sweet-cli"
 
+[[bin]]
+name = "sweet"
+path = "src/main.rs"
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
