@@ -1,5 +1,6 @@
 mod crypto;
 mod error;
+mod init;
 
 use clap::{Parser, Subcommand};
 
@@ -21,6 +22,8 @@ enum Commands {
 }
 
 fn main() {
+    init::init();
+
     let cli = Cli::parse();
 
     match &cli.command {
@@ -31,7 +34,16 @@ fn main() {
             println!("Update. force={}", &force);
         }
         Some(Commands::KeyPair {}) => {
-            crypto::generate_keypair().expect("Error generating keypair");
+            let keypair = crypto::generate_keypair("keypair").expect("Error generating keypair");
+            let keypair_retrieved =
+                crypto::retrieve_keypair_from_storage("keypair").expect("Error retrieving keypair");
+
+            use ring::signature::KeyPair;
+
+            assert_eq!(
+                keypair.public_key().as_ref(),
+                keypair_retrieved.public_key().as_ref()
+            )
         }
         None => {
             println!("no command was provided");
