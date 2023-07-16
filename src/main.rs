@@ -1,3 +1,6 @@
+mod crypto;
+mod error;
+
 use clap::{Parser, Subcommand};
 
 #[derive(Parser, Debug)]
@@ -14,6 +17,7 @@ enum Commands {
         #[arg(long)]
         force: bool,
     },
+    KeyPair {},
 }
 
 fn main() {
@@ -25,6 +29,9 @@ fn main() {
         }
         Some(Commands::Update { force }) => {
             println!("Update. force={}", &force);
+        }
+        Some(Commands::KeyPair {}) => {
+            crypto::generate_keypair().expect("Error generating keypair");
         }
         None => {
             println!("no command was provided");
