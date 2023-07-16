@@ -40,7 +40,11 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-TBD
+SWEET - The Smart Wallet Engine Simplifying Blockchain for Comprehensive Financial Management.
+
+SWEET is an engine built in Rust using CosmWasm smart contracts with the aim of powering decentralised "smart wallets" for ordinary people - couples, parents with children, WGs, guardians and wards, small groups, ... allowing them to share resources under agreed rules, kept by the blockchain, and allowing general sharing of all digital assets. It's like practical an ultra-simplified DAO, but built without any of the terminology, jargon or confusion that most people outside of crypto find so daunting.
+
+Hackathon application: https://dorahacks.io/buidl/6769
 
 ### Built With
 
