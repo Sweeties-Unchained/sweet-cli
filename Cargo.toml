@@ -5,6 +5,7 @@ edition = "2021"
 description = "Smart wallet engine CLI"
 keywords = ["smart", "wallet", "engine", "smartcontracts", "defi"]
 repository = "https://github.com/torcoste/sweet-cli"
+license = "MIT"
 
 [[bin]]
 name = "sweet"
