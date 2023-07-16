@@ -14,6 +14,7 @@ path = "src/main.rs"
 
 [dependencies]
 clap = { version = "4.3.12", features = ["derive"] }
+dialoguer = "0.10.4"
 hex = "0.4.3"
 ring = "0.16.20"
 zbox = { version = "0.9.2", features = ["libsodium-bundled", "storage-file"] }

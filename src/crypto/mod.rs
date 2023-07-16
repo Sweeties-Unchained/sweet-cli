@@ -6,7 +6,10 @@ use std::{
 };
 
 use ring::{rand, signature::Ed25519KeyPair};
-use zbox::{OpenOptions, RepoOpener};
+use zbox::{OpenOptions, Repo, RepoOpener};
+
+mod password_io;
+use password_io::{create_new_password, read_password};
 
 pub fn generate_keypair(name: &str) -> Result<Ed25519KeyPair, Error> {
     let rng = rand::SystemRandom::new();
@@ -22,17 +25,40 @@ pub fn generate_keypair(name: &str) -> Result<Ed25519KeyPair, Error> {
 }
 
 const STORAGE_URI: &str = "file://./storage";
-const STORAGE_PASSWORD: &str = "your password"; // TODO: find place for secrets
 
 fn get_private_key_path(name: &str) -> String {
     format!("/{}.private-key", name)
 }
 
-fn store_key(pkcs8_bytes: &[u8], name: &str) -> Result<(), Error> {
+fn open_storage_repo() -> Result<Repo, Error> {
+    let password = match Repo::exists(STORAGE_URI)? {
+        true => read_password("Enter password of your key chain")?,
+        false => {
+            println!("No key chain found on your device, a new one will be created. Please keep the password in a safe place.");
+            create_new_password()?
+        }
+    };
+
     // create and open a repository
-    let mut repo = RepoOpener::new()
-        .create(true)
-        .open(STORAGE_URI, STORAGE_PASSWORD)?;
+    let repo = RepoOpener::new().create(true).open(STORAGE_URI, &password);
+
+    match repo {
+        Ok(repo) => Ok(repo),
+        Err(error) => {
+            match error {
+                zbox::Error::Decrypt => {
+                    println!("Incorrect password.")
+                }
+                _ => {}
+            };
+
+            Err(Error::ZboxError(error))
+        }
+    }
+}
+
+fn store_key(pkcs8_bytes: &[u8], name: &str) -> Result<(), Error> {
+    let mut repo = open_storage_repo()?;
 
     // create and open a file for writing
     let mut file = OpenOptions::new()
@@ -59,10 +85,7 @@ pub fn retrieve_keypair_from_storage(name: &str) -> Result<Ed25519KeyPair, Error
 
 fn retrieve_private_key_from_storage(name: &str) -> Result<Vec<u8>, Error> {
     // create and open a repository
-    let mut repo = RepoOpener::new()
-        .create(true)
-        .open(STORAGE_URI, STORAGE_PASSWORD)
-        .unwrap();
+    let mut repo = open_storage_repo()?;
 
     // create and open a file in repository for writing
     let mut file = OpenOptions::new()

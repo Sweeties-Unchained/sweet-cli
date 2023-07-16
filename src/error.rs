@@ -2,6 +2,7 @@
 pub enum Error {
     KeyRejected,
     Unspecified,
+    ZboxError(zbox::Error),
 }
 
 impl From<ring::error::KeyRejected> for Error {
@@ -17,8 +18,8 @@ impl From<ring::error::Unspecified> for Error {
 }
 
 impl From<zbox::Error> for Error {
-    fn from(_: zbox::Error) -> Self {
-        Error::Unspecified
+    fn from(error: zbox::Error) -> Self {
+        Error::ZboxError(error)
     }
 }
 
