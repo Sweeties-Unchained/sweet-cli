@@ -3,6 +3,7 @@ pub enum Error {
     KeyRejected,
     Unspecified,
     ZboxError(zbox::Error),
+    KeyChainLocationError,
 }
 
 impl From<ring::error::KeyRejected> for Error {

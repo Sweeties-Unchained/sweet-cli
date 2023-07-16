@@ -2,6 +2,7 @@ use crate::error::Error;
 
 use std::{
     io::{Read, Write},
+    path::Path,
     result::Result,
 };
 
@@ -24,14 +25,14 @@ pub fn generate_keypair(name: &str) -> Result<Ed25519KeyPair, Error> {
     }
 }
 
-const STORAGE_URI: &str = "file://./storage";
-
 fn get_private_key_path(name: &str) -> String {
     format!("/{}.private-key", name)
 }
 
 fn open_storage_repo() -> Result<Repo, Error> {
-    let password = match Repo::exists(STORAGE_URI)? {
+    let repo_location = get_keychain_location()?;
+
+    let password = match Repo::exists(&repo_location)? {
         true => read_password("Enter password of your key chain")?,
         false => {
             println!("No key chain found on your device, a new one will be created. Please keep the password in a safe place.");
@@ -40,7 +41,9 @@ fn open_storage_repo() -> Result<Repo, Error> {
     };
 
     // create and open a repository
-    let repo = RepoOpener::new().create(true).open(STORAGE_URI, &password);
+    let repo = RepoOpener::new()
+        .create(true)
+        .open(&repo_location, &password);
 
     match repo {
         Ok(repo) => Ok(repo),
@@ -98,4 +101,20 @@ fn retrieve_private_key_from_storage(name: &str) -> Result<Vec<u8>, Error> {
     file.read_to_end(&mut buffer).unwrap();
 
     Ok(buffer)
+}
+
+fn get_keychain_location() -> Result<String, Error> {
+    let current_dir = std::env::current_dir().unwrap().display().to_string();
+    let home_dir = home::home_dir().ok_or(Error::KeyChainLocationError)?;
+    let absolute_path_target = home_dir.join(".sweet");
+
+    let current_path = Path::new(&current_dir);
+    let target_path = Path::new(&absolute_path_target);
+
+    let relative_path =
+        pathdiff::diff_paths(target_path, current_path).ok_or(Error::KeyChainLocationError)?;
+
+    let relative_path_string = format!("file://{}", relative_path.display());
+
+    Ok(relative_path_string)
 }
